@@ -28,7 +28,7 @@ print('Finished loading business data set. Step 1/6');
 print('Started loading review data set. Step 2/6');
 review = review_module.Review(REVIEW_DATA_SET_FILE_PATH, business.getBusinessDataDict());
 print('Finished loading review data set. Step 2/6');
-pprint('Important: ' + str(u.count_iterable(review.getReviewData())));
+pprint('Total restaurant review count after filtering: ' + str(u.count_iterable(review.getReviewData())));
 
 
 print('Started loading user data set. Step 3/6');
