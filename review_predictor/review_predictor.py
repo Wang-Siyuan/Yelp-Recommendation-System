@@ -10,8 +10,8 @@ from data_model import business as business_module
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
 BUSINESS_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_business_restaurants_only.json';
-REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review.json';
-# REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review_test.json';
+# REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review.json';
+REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review_test.json';
 
 
 TRAINING_DATA_SET_SIZE = 40000;
@@ -109,17 +109,17 @@ print('Finished constructing X,Y data matrix. Step 4/6');
 print('Started fitting ML model. Step 5/6');
 # Use cross validation to find the appropriate alpha
 reg = linear_model.LogisticRegressionCV(
-        Cs=3
-        ,penalty='l2'
+        Cs=9
+        ,penalty='l1'
         ,scoring='roc_auc'
-        ,cv=3
+        ,cv=5
         ,n_jobs=-1
-        ,max_iter=1000
+        ,max_iter=10000
         ,fit_intercept=True
         ,tol=10
     );
 reg.fit (X, Y.ravel());
-
+pprint(reg.coef_);
 print('Finished fitting ML model. Step 5/6');
 
 print('Started predicting using ML model. Step 6/6');
@@ -127,7 +127,7 @@ in_sample_error = 0;
 for i in range(0,TRAINING_DATA_SET_SIZE-1):
 	predicted_review_result = reg.predict(X[i,:].reshape(1, -1));
 	actual_review_result = Y[i,0];
-	if i < 10:
+	if i < 50:
 		print(str(predicted_review_result) + ',' + str(actual_review_result));
 	in_sample_error += (predicted_review_result - actual_review_result)**2;
 in_sample_error /= TRAINING_DATA_SET_SIZE;
@@ -138,7 +138,7 @@ out_of_sample_error = 0;
 for i in range(0,TEST_DATA_SET_SIZE-1):
 	predicted_review_result = reg.predict(X_test[i,:].reshape(1, -1));
 	actual_review_result = Y_test[i,0];
-	if i < 10:
+	if i < 50:
 		print(str(predicted_review_result) + ',' + str(actual_review_result));
 	out_of_sample_error += (predicted_review_result - actual_review_result)**2;
 out_of_sample_error /= TEST_DATA_SET_SIZE;
