@@ -110,7 +110,7 @@ print('Started fitting ML model. Step 5/6');
 # Use cross validation to find the appropriate alpha
 reg = linear_model.LogisticRegressionCV(
         Cs=9
-        ,penalty='l1'
+        ,penalty='l2'
         ,scoring='roc_auc'
         ,cv=5
         ,n_jobs=-1
