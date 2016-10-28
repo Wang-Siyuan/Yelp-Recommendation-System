@@ -1,9 +1,9 @@
 # Yelp-Recommendation-System
 
 Step 1:
-Create a directory at **Yelp-Recommendation-System/review_predictor/data_set/**. You can achieve this via command line by running:
+Create a directory at **Yelp-Recommendation-System/data_set/**. You can achieve this via command line by running:
 ```bash
-> mkdir review_predictor/data_set
+> mkdir data_set
 ```
 
 Step 2:
