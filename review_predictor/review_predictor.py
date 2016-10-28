@@ -1,159 +1,140 @@
-import utility as u
 from pprint import pprint
 import numpy as np
-import sys
 import itertools
+from util import utility as u
 from sklearn import linear_model
+from model import user as user_module
+from model import review as review_module
+from model import business as business_module
 
 np.set_printoptions(threshold=np.nan)
-
-user_data = u.parse_data_set('data-set/yelp_academic_dataset_user.json')
-business_data = u.parse_data_set('data-set/yelp_academic_dataset_business_restaurants_only.json')
-review_data = u.parse_data_set('data-set/yelp_academic_dataset_review.json')
-alcohol_type_enumeration = ['full_bar', 'beer_and_wine'];
-
-training_data_set_size = 20000;
-feature_size = 46;
-
-X = np.zeros((training_data_set_size, feature_size));
-Y = np.zeros((training_data_set_size, 1));
-
-user_dict = {};
-for user_data_entry in user_data:
-	user_dict[user_data_entry['user_id']] = user_data_entry;
-
-business_dict = {}
-for business_data_entry in business_data:
-	business_dict[business_data_entry['business_id']] = business_data_entry;
+USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
+BUSINESS_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_business_restaurants_only.json';
+REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review.json';
+# REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review_test.json';
 
 
-def populate_user_data(row_num, feature_index_start, user_data_entry):
-	X[row_num,feature_index_start] = user_data_entry['average_stars'];
-	X[row_num,feature_index_start + 1] = u.get_nullable_attribute(user_data_entry['compliments'],'cool');
-	X[row_num,feature_index_start + 2] = u.get_nullable_attribute(user_data_entry['compliments'],'hot');
-	X[row_num,feature_index_start + 3] = u.get_nullable_attribute(user_data_entry['compliments'],'more');
-	X[row_num,feature_index_start + 4] = u.get_nullable_attribute(user_data_entry['compliments'],'writer');
-	X[row_num,feature_index_start + 5] = user_data_entry['fans'];
-	X[row_num,feature_index_start + 6] = user_data_entry['review_count'];
-	X[row_num,feature_index_start + 7] = user_data_entry['votes']['cool'];
-	X[row_num,feature_index_start + 8] = user_data_entry['votes']['useful'];
+TRAINING_DATA_SET_SIZE = 40000;
+VALIDATION_DATA_SET_SIZE = 40000;
+TEST_DATA_SET_SIZE = 40000;
+TOTAL_DATA_SET_SIZE = TRAINING_DATA_SET_SIZE + VALIDATION_DATA_SET_SIZE + TEST_DATA_SET_SIZE;
+FEATURE_SIZE = 46;
+
+print('Started loading business data set. Step 1/6');
+business = business_module.Business(BUSINESS_DATA_SET_FILE_PATH);
+print('Finished loading business data set. Step 1/6');
 
 
-def populate_business_data(row_num, feature_index_start, user_id, business_data_entry):
-	business_attribute = business_data_entry['attributes'];
-	X[row_num,feature_index_start] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Accepts Credit Cards');
-
-	X[row_num,feature_index_start + 1] = u.get_nullable_attribute_with_contained_by_enumeration(business_attribute, 'Alcohol', alcohol_type_enumeration);
-
-	X[row_num,feature_index_start + 2] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','casual');
-	X[row_num,feature_index_start + 3] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','classy');
-	X[row_num,feature_index_start + 4] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','divey');
-	X[row_num,feature_index_start + 5] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','hipster');
-	X[row_num,feature_index_start + 6] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','intimate');
-	X[row_num,feature_index_start + 7] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','romantic');
-	X[row_num,feature_index_start + 8] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','touristy');
-	X[row_num,feature_index_start + 9] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','trendy');
-	X[row_num,feature_index_start + 10] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Ambience','upscale');
-
-	X[row_num,feature_index_start + 11] = u.get_nullable_attribute_with_expected_value(business_attribute,'Attire','casual');
-	X[row_num,feature_index_start + 12] = u.get_nullable_attribute_with_expected_value(business_attribute,'Attire','dressy');
-	X[row_num,feature_index_start + 13] = u.get_nullable_attribute_with_expected_value(business_attribute,'Attire','formal');
-
-	X[row_num,feature_index_start + 14] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Caters');
-	X[row_num,feature_index_start + 15] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Delivery');
-	X[row_num,feature_index_start + 16] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Drive-Thru');
-
-	X[row_num,feature_index_start + 17] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','breakfast');
-	X[row_num,feature_index_start + 18] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','brunch');
-	X[row_num,feature_index_start + 19] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','dessert');
-	X[row_num,feature_index_start + 20] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','dinner');
-	X[row_num,feature_index_start + 21] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','latenight');
-	X[row_num,feature_index_start + 22] = u.get_nullable_attribute_and_check_for_boolean_sub_attribute(business_attribute,'Good For','lunch');
-
-	X[row_num,feature_index_start + 23] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Good For Groups');
-	X[row_num,feature_index_start + 24] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Good for Kids');
-	X[row_num,feature_index_start + 25] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Has TV');
-	X[row_num,feature_index_start + 26] = u.get_noise_level_num_value(business_attribute);
-	X[row_num,feature_index_start + 27] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Outdoor Seating');
-	X[row_num,feature_index_start + 28] = u.get_nullable_attribute_with_boolean_dict(business_attribute, 'Parking');
-	X[row_num,feature_index_start + 29] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Price Range');
-	X[row_num,feature_index_start + 30] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Take-out');
-	X[row_num,feature_index_start + 31] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Takes Reservations');
-	X[row_num,feature_index_start + 32] = u.get_nullable_attribute_with_str_2_int(business_attribute,'Waiter Service');
-	X[row_num,feature_index_start + 33] = get_user_preference_business_category_correlation(user_id, business_data_entry['categories']);
-	X[row_num,feature_index_start + 34] = business_data_entry['review_count'];
-	X[row_num,feature_index_start + 35] = business_data_entry['stars'];
-	X[row_num,feature_index_start + 36] = business_data_entry['review_count'];
+print('Started loading review data set. Step 2/6');
+review = review_module.Review(REVIEW_DATA_SET_FILE_PATH, business.getBusinessDataDict());
+print('Finished loading review data set. Step 2/6');
+pprint('Important: ' + str(u.count_iterable(review.getReviewData())));
 
 
-def get_user_preference_business_category_correlation(user_id, categories):
-	category_preferences_percentage_dict = user_category_preferences_percentage_dict[user_id];
-	correlation = 0;
-	for category in categories:
-		if category in category_preferences_percentage_dict:
-			correlation += category_preferences_percentage_dict[category];
-	return correlation;
-
-user_category_preferences = {};
-restaurants_reviews = [];
-for review_data_entry in itertools.islice(review_data,training_data_set_size*5):
-	if review_data_entry['user_id'] in user_dict and review_data_entry['business_id'] in business_dict:
-		restaurants_reviews.append(review_data_entry);
-
-		business_data_entry = business_dict[review_data_entry['business_id']];
-		restaurant_categories = business_data_entry['categories'];
-		user_id = review_data_entry['user_id'];
-		if user_id not in user_category_preferences:
-			user_category_preferences[user_id] = {};
-		category_preferences = user_category_preferences[user_id];
-		for restaurants_category in restaurant_categories:
-			if restaurants_category not in category_preferences:
-				category_preferences[restaurants_category] = 0;
-			category_preferences[restaurants_category] += 1;
-# pprint(user_category_preferences);
+print('Started loading user data set. Step 3/6');
+user = user_module.User(USER_DATA_SET_FILE_PATH, review.getUserIdToBusinessIdMap(), business.getBusinessDataDict());
+print('Finished loading user data set. Step 3/6');
 
 
-user_category_preferences_percentage_dict = {};
-for user_id in user_category_preferences:
-	user_category_preferences_percetange_percentages = {};
-	user_category_preferences_percentage_dict[user_id] = user_category_preferences_percetange_percentages;
-	total_count = 0;
-	category_count = user_category_preferences[user_id];
-	for category in category_count:
-		total_count += category_count[category];
-	for category in category_count:
-		user_category_preferences_percetange_percentages[category] = category_count[category]/total_count;
+print('Started constructing X,Y data matrix. Step 4/6');
+X = np.zeros((TRAINING_DATA_SET_SIZE, FEATURE_SIZE));
+Y = np.zeros((TRAINING_DATA_SET_SIZE, 1));
+X_validation = np.zeros((VALIDATION_DATA_SET_SIZE, FEATURE_SIZE));
+Y_validation = np.zeros((VALIDATION_DATA_SET_SIZE, ));
+X_test = np.zeros((TEST_DATA_SET_SIZE, FEATURE_SIZE));
+Y_test = np.zeros((TEST_DATA_SET_SIZE, 1));
 
-# pprint(user_category_preferences_percentage_dict);
-
+training_review_data = [];
+validation_review_data = [];
+test_review_data = [];
 
 
-for i,review_data_entry in enumerate(itertools.islice(restaurants_reviews,training_data_set_size)):
+for i,review_data_entry in enumerate(review.getReviewData()):
+	if i < TRAINING_DATA_SET_SIZE:
+		training_review_data.append(review_data_entry);
+	elif i < (TRAINING_DATA_SET_SIZE + VALIDATION_DATA_SET_SIZE):
+		validation_review_data.append(review_data_entry);
+	elif i < (TRAINING_DATA_SET_SIZE + VALIDATION_DATA_SET_SIZE + TEST_DATA_SET_SIZE):
+		test_review_data.append(review_data_entry);
+	else:
+		break;
+pprint('Training data size: ' + str(u.count_iterable(training_review_data)));
+pprint('Validation data size: ' + str(u.count_iterable(validation_review_data)));
+pprint('Test data size: ' + str(u.count_iterable(test_review_data)));
+
+
+for i,review_data_entry in enumerate(validation_review_data):
 	user_id = review_data_entry['user_id'];
-	user_data_entry = user_dict[user_id];
-	populate_user_data(i, 0, user_data_entry);
-	business_data_entry = business_dict[review_data_entry['business_id']];
-	populate_business_data(i, 9, user_id, business_data_entry);
-	# pprint(review_data_entry)
+	user_matrix = user.populate_user_data(user_id);
+	business_id = review_data_entry['business_id'];
+	business_matrix = business.populate_business_data(user, user_id, business_id);
+	# print(user_matrix.shape);
+	# print(business_matrix.shape);
+	X_validation[i,:] = np.concatenate((user_matrix, business_matrix), axis=1);
+	Y_validation[i] = review_data_entry['stars'];
+# pprint(X_validation.sum(axis=0))
+X_validation_normed = (X_validation - X_validation.mean(axis=0)) / X_validation.std(axis=0);
+
+for i,review_data_entry in enumerate(training_review_data):
+	user_id = review_data_entry['user_id'];
+	user_matrix = user.populate_user_data(user_id);
+	business_id = review_data_entry['business_id'];
+	business_matrix = business.populate_business_data(user, user_id, business_id);
+	# print(user_matrix.shape);
+	# print(business_matrix.shape);
+	X[i,:] = np.concatenate((user_matrix, business_matrix), axis=1);
 	Y[i] = review_data_entry['stars'];
+# pprint(X.sum(axis=0))
+X_normed = (X - X.mean(axis=0)) / X.std(axis=0);
+
+for i,review_data_entry in enumerate(test_review_data):
+	# pprint(review_data_entry);
+	user_id = review_data_entry['user_id'];
+	user_matrix = user.populate_user_data(user_id);
+	business_id = review_data_entry['business_id'];
+	business_matrix = business.populate_business_data(user, user_id, business_id);
+	# print(user_matrix.shape);
+	# print(business_matrix.shape);
+	X_test[i,:] = np.concatenate((user_matrix, business_matrix), axis=1);
+	Y_test[i] = review_data_entry['stars'];
+# pprint(X_test.sum(axis=0))
+X_test_normed = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0);
 
 # pprint(X)
-pprint(X.sum(axis=0))
+# pprint(X.sum(axis=0))
 # pprint(Y)
+# pprint(X_normed);
+print('Finished constructing X,Y data matrix. Step 4/6');
 
-X_normed = (X - X.mean(axis=0)) / X.std(axis=0)
+print('Started fitting ML model. Step 5/6');
+# Use cross validation to find the appropriate alpha
+reg = linear_model.LassoCV(eps=0.01,n_alphas=3,n_jobs=-1,precompute=True,max_iter=100);
+# pprint(X_validation_normed);
+# pprint(Y_validation);
+reg.fit (X_validation_normed, Y_validation);
+chosen_alpha = reg.alpha_;
 
-pprint(X_normed);
+# Ridge Regression
+# reg = linear_model.Ridge (alpha = .5)
+# reg.fit (X_normed, Y);
 
-
-
-
-reg = linear_model.Lasso(alpha = 0.01, max_iter=10000);
+# Lasso Regularizer
+reg = linear_model.Lasso(alpha = chosen_alpha);
 reg.fit (X_normed, Y); 
 print(reg.coef_);
 print(reg.intercept_);
+print('Finished fitting ML model. Step 5/6');
 
-# pprint(next(user_data))
-# pprint(next(business_data))
-# pprint(next(review_data))
+print('Started predicting using ML model. Step 6/6');
+in_sample_error = 0;
+for i in range(0,TRAINING_DATA_SET_SIZE-1):
+	in_sample_error += (reg.predict(X[i,:].reshape(1, -1)) - Y[i,0])**2;
+in_sample_error /= TRAINING_DATA_SET_SIZE;
+print('In sample error is: ' + str(in_sample_error));
 
+out_of_sample_error = 0;
+for i in range(0,TEST_DATA_SET_SIZE-1):
+	out_of_sample_error += (reg.predict(X_test[i,:].reshape(1, -1)) - Y_test[i,0])**2;
+out_of_sample_error /= TEST_DATA_SET_SIZE;
+print('Out of sample error is: ' + str(out_of_sample_error));
+print('Finished predicting using ML model. Step 6/6');
