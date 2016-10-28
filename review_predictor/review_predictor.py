@@ -28,7 +28,7 @@ print('Finished loading business data set. Step 1/6');
 print('Started loading review data set. Step 2/6');
 review = review_module.Review(REVIEW_DATA_SET_FILE_PATH, business.getBusinessDataDict());
 print('Finished loading review data set. Step 2/6');
-pprint('Total restaurant review count after filtering: ' + str(u.count_iterable(review.getReviewData())));
+print('Total restaurant review count after filtering: ' + str(u.count_iterable(review.getReviewData())));
 
 
 print('Started loading user data set. Step 3/6');
@@ -58,9 +58,9 @@ for i,review_data_entry in enumerate(review.getReviewData()):
 		test_review_data.append(review_data_entry);
 	else:
 		break;
-pprint('Training data size: ' + str(u.count_iterable(training_review_data)));
-pprint('Validation data size: ' + str(u.count_iterable(validation_review_data)));
-pprint('Test data size: ' + str(u.count_iterable(test_review_data)));
+print('Training data size: ' + str(u.count_iterable(training_review_data)));
+print('Validation data size: ' + str(u.count_iterable(validation_review_data)));
+print('Test data size: ' + str(u.count_iterable(test_review_data)));
 
 
 for i,review_data_entry in enumerate(validation_review_data):
@@ -108,33 +108,49 @@ print('Finished constructing X,Y data matrix. Step 4/6');
 
 print('Started fitting ML model. Step 5/6');
 # Use cross validation to find the appropriate alpha
-reg = linear_model.LassoCV(eps=0.01,n_alphas=3,n_jobs=-1,precompute=True,max_iter=100);
+reg = linear_model.LogisticRegressionCV(
+        Cs=3
+        ,penalty='l2'
+        ,scoring='roc_auc'
+        ,cv=3
+        ,n_jobs=-1
+        ,max_iter=1000
+        ,fit_intercept=True
+        ,tol=10
+    );
 # pprint(X_validation_normed);
 # pprint(Y_validation);
-reg.fit (X_validation_normed, Y_validation);
-chosen_alpha = reg.alpha_;
+reg.fit (X, Y.ravel());
+# chosen_alpha = reg.alpha_;
 
-# Ridge Regression
-# reg = linear_model.Ridge (alpha = .5)
-# reg.fit (X_normed, Y);
 
 # Lasso Regularizer
-reg = linear_model.Lasso(alpha = chosen_alpha);
-reg.fit (X_normed, Y); 
-print(reg.coef_);
-print(reg.intercept_);
+# reg = linear_model.Lasso(alpha = chosen_alpha);
+# reg.fit (X_normed, Y); 
+# print(reg.coef_);
+# print(reg.intercept_);
 print('Finished fitting ML model. Step 5/6');
 
 print('Started predicting using ML model. Step 6/6');
 in_sample_error = 0;
 for i in range(0,TRAINING_DATA_SET_SIZE-1):
-	in_sample_error += (reg.predict(X[i,:].reshape(1, -1)) - Y[i,0])**2;
+	predicted_review_result = reg.predict(X[i,:].reshape(1, -1));
+	actual_review_result = Y[i,0];
+	if i < 10:
+		print(str(predicted_review_result) + ',' + str(actual_review_result));
+	in_sample_error += (predicted_review_result - actual_review_result)**2;
 in_sample_error /= TRAINING_DATA_SET_SIZE;
 print('In sample error is: ' + str(in_sample_error));
+print('Mean accuracy: ' + str(reg.score(X,Y)));
 
 out_of_sample_error = 0;
 for i in range(0,TEST_DATA_SET_SIZE-1):
-	out_of_sample_error += (reg.predict(X_test[i,:].reshape(1, -1)) - Y_test[i,0])**2;
+	predicted_review_result = reg.predict(X_test[i,:].reshape(1, -1));
+	actual_review_result = Y_test[i,0];
+	if i < 10:
+		print(str(predicted_review_result) + ',' + str(actual_review_result));
+	out_of_sample_error += (predicted_review_result - actual_review_result)**2;
 out_of_sample_error /= TEST_DATA_SET_SIZE;
 print('Out of sample error is: ' + str(out_of_sample_error));
+print('Mean accuracy: ' + str(reg.score(X,Y)));
 print('Finished predicting using ML model. Step 6/6');
