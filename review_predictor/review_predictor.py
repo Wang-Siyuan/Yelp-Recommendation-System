@@ -3,9 +3,9 @@ import numpy as np
 import itertools
 from util import utility as u
 from sklearn import linear_model
-from model import user as user_module
-from model import review as review_module
-from model import business as business_module
+from data_model import user as user_module
+from data_model import review as review_module
+from data_model import business as business_module
 
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
@@ -118,17 +118,8 @@ reg = linear_model.LogisticRegressionCV(
         ,fit_intercept=True
         ,tol=10
     );
-# pprint(X_validation_normed);
-# pprint(Y_validation);
 reg.fit (X, Y.ravel());
-# chosen_alpha = reg.alpha_;
 
-
-# Lasso Regularizer
-# reg = linear_model.Lasso(alpha = chosen_alpha);
-# reg.fit (X_normed, Y); 
-# print(reg.coef_);
-# print(reg.intercept_);
 print('Finished fitting ML model. Step 5/6');
 
 print('Started predicting using ML model. Step 6/6');
@@ -152,5 +143,5 @@ for i in range(0,TEST_DATA_SET_SIZE-1):
 	out_of_sample_error += (predicted_review_result - actual_review_result)**2;
 out_of_sample_error /= TEST_DATA_SET_SIZE;
 print('Out of sample error is: ' + str(out_of_sample_error));
-print('Mean accuracy: ' + str(reg.score(X,Y)));
+print('Mean accuracy: ' + str(reg.score(X_test,Y_test)));
 print('Finished predicting using ML model. Step 6/6');
