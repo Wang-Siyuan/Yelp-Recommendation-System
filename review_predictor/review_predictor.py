@@ -3,6 +3,10 @@ import numpy as np
 import itertools
 from util import utility as u
 from sklearn import linear_model
+from glrm.glrm import GLRM
+import glrm.utils
+from glrm.reg import QuadraticReg
+from glrm.loss import OrdinalLoss
 from data_model import user as user_module
 from data_model import review as review_module
 from data_model import business as business_module
@@ -14,8 +18,8 @@ BUSINESS_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_business_restauran
 REVIEW_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_review_test.json';
 
 
-TRAINING_DATA_SET_SIZE = 40000;
-TEST_DATA_SET_SIZE = 40000;
+TRAINING_DATA_SET_SIZE = 100;
+TEST_DATA_SET_SIZE = 100;
 TOTAL_DATA_SET_SIZE = TRAINING_DATA_SET_SIZE + TEST_DATA_SET_SIZE;
 FEATURE_SIZE = 45;
 
@@ -69,7 +73,18 @@ for i,review_data_entry in enumerate(training_review_data):
 	Y[i] = review_data_entry['stars'];
 # pprint(X.sum(axis=0))
 X_normed = (X - X.mean(axis=0)) / X.std(axis=0);
-print(X_normed);
+X_normed=np.ma.compress_cols(np.ma.masked_invalid(X_normed))
+print(X_normed.shape)
+
+A = X_normed
+k = 10
+loss = OrdinalLoss
+regX, regY = QuadraticReg(0.1), QuadraticReg(0.1)
+glrm_ord = GLRM(A, loss, regX, regY, k)
+glrm_ord.fit(eps=1e-3, max_iters=100)
+Left,Right = glrm_ord.factors()
+print(Left)
+print(Right)
 
 for i,review_data_entry in enumerate(test_review_data):
 	# pprint(review_data_entry);
