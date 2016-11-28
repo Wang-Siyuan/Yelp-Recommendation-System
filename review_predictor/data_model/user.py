@@ -1,6 +1,8 @@
 from util import utility as u
 from pprint import pprint
 import numpy as np
+import matplotlib.pyplot as plt
+import pylab as pl
 
 class User:
 
@@ -63,3 +65,30 @@ class User:
 		X[0,7] = user_data_entry['votes']['cool'];
 		X[0,8] = user_data_entry['votes']['useful'];
 		return X;
+
+	def generateStarsHistogram(self):
+		review_counts = np.zeros((u.count_iterable(self.user_data_dict),1));
+		for i,user_id in enumerate(self.user_data_dict):
+			user_data_entry = self.user_data_dict[user_id];
+			review_counts[i,0] = user_data_entry["review_count"];
+		pl.hist(review_counts, bins=np.logspace(1, 4.0, 50));
+		pl.gca().set_xscale("log")
+		plt.title('User Review counts histogram.');
+		pl.show()
+
+		average_stars = np.zeros((u.count_iterable(self.user_data_dict),1));
+		for i,user_id in enumerate(self.user_data_dict):
+			user_data_entry = self.user_data_dict[user_id];
+			average_stars[i,0] = user_data_entry["average_stars"];
+		plt.hist(average_stars, bins=[0.5,1.5,2.5,3.5,4.5,5.5]);
+		plt.title('User average stars histogram.');
+		plt.show();
+
+		fans_count = np.zeros((u.count_iterable(self.user_data_dict),1));
+		for i,user_id in enumerate(self.user_data_dict):
+			user_data_entry = self.user_data_dict[user_id];
+			fans_count[i,0] = user_data_entry["fans"];
+		pl.hist(fans_count, bins=np.logspace(1, 4.0, 50));
+		pl.gca().set_xscale("log")
+		pl.title('User fans count histogram');
+		pl.show()
