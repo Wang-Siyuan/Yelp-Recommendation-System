@@ -33,7 +33,7 @@ def get_nullable_attribute_with_expected_value(attribute_dict, attribute_key, ex
         if attribute_dict[attribute_key] == expected_value:
             return 1;
         else:
-            return 0;
+            return -1;
     else:
         return 0;
 
@@ -43,7 +43,7 @@ def get_nullable_attribute_and_check_for_boolean_sub_attribute(attribute_dict, a
         if key_in_attribute_value in attribute_value and str_2_int(attribute_value[key_in_attribute_value]) == 1:
             return 1;
         else:
-            return 0;
+            return -1;
     else:
         return 0;
 
@@ -52,7 +52,7 @@ def get_nullable_attribute_with_contained_by_enumeration(attribute_dict, attribu
         if attribute_dict[attribute_key] in expected_value_list:
             return 1;
         else:
-            return 0;
+            return -1;
     else:
         return 0;
 
@@ -62,7 +62,7 @@ def get_nullable_attribute_with_boolean_dict(attribute_dict, key):
         for attribute_value_dict_key in attribute_value_dict:
             if str_2_int(attribute_value_dict[attribute_value_dict_key]) == 1:
                 return 1;
-        return 0;
+        return -1;
     else:
         return 0;
 
@@ -74,9 +74,9 @@ def get_noise_level_num_value(attribute_dict):
     elif attribute_dict['Noise Level'] == 'loud':
         return -1;
     elif attribute_dict['Noise Level'] == 'average':
-        return 0;
-    elif attribute_dict['Noise Level'] == 'quiet':
         return 1;
+    elif attribute_dict['Noise Level'] == 'quiet':
+        return 2;
 
 def count_iterable(i):
     return sum(1 for e in i)
