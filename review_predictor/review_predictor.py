@@ -7,6 +7,13 @@ import mord as m
 from data_model import user as user_module
 from data_model import review as review_module
 from data_model import business as business_module
+from sklearn.decomposition import PCA
+
+import plotly.plotly as py
+import plotly.graph_objs as go
+
+#from matplotlib import pyplot
+#from mpl_toolkits.mplot3d import axes3D
 
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
@@ -64,9 +71,29 @@ for i,review_data_entry in enumerate(all_review_data):
 	X[i,:] = np.concatenate((user_matrix, business_matrix), axis=1);
 	Y[i] = review_data_entry['stars'];
 
-# X_normed = (X - X.mean(axis=0)) / X.std(axis=0); #If we decided to normalize
-X_normed = X; #If we decided not to normalize
+
+X_normed = (X - X.mean(axis=0)) / X.std(axis=0); #If we decided to normalize
+
+#X_normed = X; #If we decided not to normalize
 X_normed=np.ma.compress_cols(np.ma.masked_invalid(X_normed))
+pca = PCA(n_components= 3)
+X_normed=pca.fit_transform(X_normed)
+
+#Axes3D.scatter(X_normed[:,1],X_normed[:,2],X_normed[:,3], zdir='z', s=20)
+
+trace = go.Scatter(
+    x = X_normed[:,1],
+    y = X_normed[:,2],
+	z = X_normed[:,3],
+    mode = 'markers'
+)
+
+data = [trace]
+
+# Plot and embed in ipython notebook!
+py.iplot(data, filename='basic-scatter')
+
+
 print(X_normed.shape)
 X_training = X_normed[1:TRAINING_DATA_SET_SIZE,:]
 Y_training = Y[1:TRAINING_DATA_SET_SIZE,:]
