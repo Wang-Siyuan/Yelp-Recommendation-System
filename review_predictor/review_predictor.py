@@ -4,7 +4,6 @@ import itertools
 from util import utility as u
 from sklearn import linear_model
 from glrm.glrm import GLRM
-import glrm.utils
 from glrm.reg import QuadraticReg
 from glrm.loss import OrdinalLoss
 from data_model import user as user_module
