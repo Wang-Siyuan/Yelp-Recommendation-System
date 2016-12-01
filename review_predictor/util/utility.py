@@ -14,7 +14,12 @@ def write_data_set_to_file(data, file_path):
 
 
 def str_2_int(val):
-    return int(val == True or val == 'true' or val == 'True');
+    if val is None:
+        return 0
+    elif val == True or val == 'true' or val == 'True':
+        return 1
+    else:
+        return -1
 
 def get_nullable_attribute(attribute_dict, attribute_key):
     if attribute_key in attribute_dict:
@@ -80,5 +85,9 @@ def get_noise_level_num_value(attribute_dict):
 
 def count_iterable(i):
     return sum(1 for e in i)
+
+def convert_y_to_vector(y):
+    return np.array([str_2_int(y >= -1000), str_2_int(y >= 1.5), str_2_int(y >= 2.5), str_2_int(y >= 3.5), str_2_int(y >= 4.5)]).reshape(1,5)
+
 
     
