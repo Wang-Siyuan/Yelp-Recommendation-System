@@ -83,6 +83,18 @@ def get_noise_level_num_value(attribute_dict):
     elif attribute_dict['Noise Level'] == 'quiet':
         return 2;
 
+def get_price_range(attribute_dict):
+    if 'Price Range' not in attribute_dict:
+        return 0;
+    elif attribute_dict['Price Range'] == 1:
+        return -2;
+    elif attribute_dict['Price Range'] == 'loud':
+        return -1;
+    elif attribute_dict['Price Range'] == 'average':
+        return 1;
+    elif attribute_dict['Price Range'] == 'quiet':
+        return 2;
+
 def count_iterable(i):
     return sum(1 for e in i)
 
