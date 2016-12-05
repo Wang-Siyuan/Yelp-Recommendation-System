@@ -31,8 +31,8 @@ import pickle
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
 
-TRAINING_DATA_SET_SIZE = 2000
-TEST_DATA_SET_SIZE = 2000
+TRAINING_DATA_SET_SIZE = 5000
+TEST_DATA_SET_SIZE = 5000
 VALIDATION_DATA_SET_SIZE = 0
 FEATURE_SIZE = 8
 
@@ -58,6 +58,10 @@ pprint(len(Y_training))
 #If we decided to normalize
 X_training = (X_training - X_training.mean(axis=0)) / X_training.std(axis=0)
 X_training=np.ma.compress_cols(np.ma.masked_invalid(X_training))
+X_test = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0)
+X_test=np.ma.compress_cols(np.ma.masked_invalid(X_test))
+pprint(X_training.shape)
+pprint(X_test.shape)
 
 U, s, V = np.linalg.svd(X_training, full_matrices=False)
 S = np.diag(s)
@@ -65,7 +69,7 @@ np.allclose(X_training, np.dot(U[:,:], np.dot(S[:,:], V[:,:])))
 print('Finished constructing X,Y data matrix. Step 3/5');
 
 
-# pca = PCA(n_components= 5)
+# pca = PCA(n_components= 7)
 # X_training=pca.fit_transform(X_training)
 # X_test=pca.fit_transform(X_test)
 
@@ -89,31 +93,38 @@ print('Finished constructing X,Y data matrix. Step 3/5');
 print('Started clustering with kmeans');
 
 cluster_num = 3
-kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_training)
+X_overall = np.concatenate((X_training,X_test))
+Y_overall = np.concatenate((Y_training,Y_test))
+len_X_training = len(X_training)
+kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_overall)
 centroids = kmeans.cluster_centers_
 labels = kmeans.labels_
 
-X_training_1 = X_training[labels==0]
-X_training_2 = X_training[labels==1]
-X_training_3 = X_training[labels==2]
-Y_training_1 = Y_training[labels==0]
-Y_training_2 = Y_training[labels==1]
-Y_training_3 = Y_training[labels==2]
+labels_train = labels[:len_X_training]
+labels_test = labels[len_X_training:]
+
+print('Finishing kmeans , start assigning index to X_training')
+X_training_1 = X_training[labels_train==0]
+X_training_2 = X_training[labels_train==1]
+X_training_3 = X_training[labels_train==2]
+Y_training_1 = Y_training[labels_train==0]
+Y_training_2 = Y_training[labels_train==1]
+Y_training_3 = Y_training[labels_train==2]
 
 print("size of X_training_1:"+str(len(X_training_1)))
 print("size of X_training_2:"+str(len(X_training_2)))
 print("size of X_training_3:"+str(len(X_training_3)))
 
-kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_test)
-centroids = kmeans.cluster_centers_
-labels = kmeans.labels_
+# kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_test)
+# centroids = kmeans.cluster_centers_
+# labels = kmeans.labels_
 
-X_test_1 = X_test[labels==0]
-X_test_2 = X_test[labels==1]
-X_test_3 = X_test[labels==2]
-Y_test_1 = Y_test[labels==0]
-Y_test_2 = Y_test[labels==1]
-Y_test_3 = Y_test[labels==2]
+X_test_1 = X_test[labels_test==0]
+X_test_2 = X_test[labels_test==1]
+X_test_3 = X_test[labels_test==2]
+Y_test_1 = Y_test[labels_test==0]
+Y_test_2 = Y_test[labels_test==1]
+Y_test_3 = Y_test[labels_test==2]
 
 print("size of X_test_1:"+str(len(X_test_1)))
 print("size of X_test_2:"+str(len(X_test_2)))
@@ -131,54 +142,57 @@ print("size of X_test_3:"+str(len(X_test_3)))
 # ax.scatter(centroids[:, 0],centroids[:, 1], centroids[:, 2], marker = "x", s=150, linewidths = 5, zorder = 100)
 # plt.show()
 
-# model_1 = logistic_regression_module.LogisticRegression()
-# model_1.fit(X_training_1, Y_training_1)
-# pprint('Finished fitting model 1');
+model_1 = logistic_regression_module.LogisticRegression()
+model_1.fit(X_training_1, Y_training_1)
+pprint('Finished fitting model 1');
 
-# model_2 = logistic_regression_module.LogisticRegression()
-# model_2.fit(X_training_2, Y_training_2)
-# pprint('Finished fitting model 2');
+model_2 = logistic_regression_module.LogisticRegression()
+model_2.fit(X_training_2, Y_training_2)
+pprint('Finished fitting model 2');
 
-# model_3 = logistic_regression_module.LogisticRegression()
-# model_3.fit(X_training_3, Y_training_3)
-# pprint('Finished fitting model 3');
+model_3 = logistic_regression_module.LogisticRegression()
+model_3.fit(X_training_3, Y_training_3)
+pprint('Finished fitting model 3');
 
 # model_1 = quadratic_loss_module.QuadraticLoss()
 # model_1.fit(X_training_1, Y_training_1)
 # pprint('Finished fitting model 1');
-
+#
 # model_2 = quadratic_loss_module.QuadraticLoss()
 # model_2.fit(X_training_2, Y_training_2)
 # pprint('Finished fitting model 2');
-
+#
 # model_3 = quadratic_loss_module.QuadraticLoss()
 # model_3.fit(X_training_3, Y_training_3)
 # pprint('Finished fitting model 3');
 
+
+### fitting model using ordinal regression
+
 # model_1 = ordinal_regression_module.OrdinalRegression()
 # model_1.fit(X_training_1, Y_training_1)
 # pprint('Finished fitting model 1');
-
+#
 # model_2 = ordinal_regression_module.OrdinalRegression()
 # model_2.fit(X_training_2, Y_training_2)
 # pprint('Finished fitting model 2');
-
+#
 # model_3 = ordinal_regression_module.OrdinalRegression()
 # model_3.fit(X_training_3, Y_training_3)
 # pprint('Finished fitting model 3');
 
 
-model_1 = vectorized_output_regression_module.VectorizedOutputRegression()
-model_1.fit(X_training_1, Y_training_1)
-pprint('Finished fitting model 1');
-
-model_2 = vectorized_output_regression_module.VectorizedOutputRegression()
-model_2.fit(X_training_2, Y_training_2)
-pprint('Finished fitting model 2');
-
-model_3 = vectorized_output_regression_module.VectorizedOutputRegression()
-model_3.fit(X_training_3, Y_training_3)
-pprint('Finished fitting model 3');
+# model_1 = vectorized_output_regression_module.VectorizedOutputRegression()
+# model_1.fit(X_training_1, Y_training_1)
+# pprint('Finished fitting model 1');
+#
+# model_2 = vectorized_output_regression_module.VectorizedOutputRegression()
+# model_2.fit(X_training_2, Y_training_2)
+# pprint('Finished fitting model 2');
+#
+# model_3 = vectorized_output_regression_module.VectorizedOutputRegression()
+# model_3.fit(X_training_3, Y_training_3)
+# pprint('Finished fitting model 3');
 
 print('Finished fitting ML model. Step 4/5');
 

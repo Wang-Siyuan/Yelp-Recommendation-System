@@ -40,7 +40,7 @@ class VectorizedOutputRegression:
         for i in range(0,X_test.shape[0]-1):
           predicted_review_result = self.predict(self.weights, X_test[i,:].reshape(1, -1));
           actual_review_result = Y_test[i,0];
-          if u.convert_y_to_discrete_output(predicted_review_result) <= actual_review_result:
+          if math.fabs(u.convert_y_to_discrete_output(predicted_review_result) - actual_review_result) <= 2:
             prediction_match_count += 1
           error += (predicted_review_result - actual_review_result)**2;
         error /= X_test.shape[0];
@@ -99,5 +99,3 @@ class VectorizedOutputRegression:
                 min_val = i
                 min_loss_val = self.custom_loss_by_vectorization(i,y_predicted[i])
         return min_val
-
-
