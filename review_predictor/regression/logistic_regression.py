@@ -9,7 +9,7 @@ class LogisticRegression:
         ,scoring='roc_auc'
         ,cv=3
         ,n_jobs=-1
-        ,max_iter=10000
+        ,max_iter=1000
         ,fit_intercept=True
         ,tol=10)
 
