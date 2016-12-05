@@ -18,9 +18,11 @@ from data_model import user as user_module
 from data_model import review as review_module
 from data_model import business as business_module
 from data_model import data_aggregator as data_aggregator_module
+from regression import ordinal_logistic as ordinal_logistic_module
 from regression import logistic_regression as logistic_regression_module
 from regression import ordinal_regression as ordinal_regression_module
 from regression import quadratic_loss as quadratic_loss_module
+from regression import vectorized_output_regression as vectorized_output_regression_module
 from sklearn.decomposition import PCA
 import pickle
 
@@ -29,9 +31,10 @@ import pickle
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
 
-TRAINING_DATA_SET_SIZE = 4000
-TEST_DATA_SET_SIZE = 4000
+TRAINING_DATA_SET_SIZE = 500
+TEST_DATA_SET_SIZE = 500
 VALIDATION_DATA_SET_SIZE = 0
+FEATURE_SIZE = 7
 
 print('Started loading business, user, review data set. Step 1/5');
 user = user_module.User(USER_DATA_SET_FILE_PATH);
@@ -74,8 +77,7 @@ fig = plt.figure()
 # plt.show()
 ax = fig.gca(projection='3d')
 ax.set_title('Visualization of input dataset X after PCA')
-ax.scatter(
-           X_training[:,0], X_training[:,1], X_training[:,2],  # data
+ax.scatter(X_training[:,0], X_training[:,1], X_training[:,2],  # data
            color='purple',                            # marker colour
            marker='o',                                # marker shape
            s=30                                       # marker size
@@ -89,7 +91,6 @@ print('Started clustering with kmeans');
 
 cluster_num = 3
 kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_training)
-
 centroids = kmeans.cluster_centers_
 labels = kmeans.labels_
 
@@ -104,6 +105,21 @@ print("size of X_training_1:"+str(len(X_training_1)))
 print("size of X_training_2:"+str(len(X_training_2)))
 print("size of X_training_3:"+str(len(X_training_3)))
 
+kmeans = KMeans(n_clusters = cluster_num, random_state=0).fit(X_test)
+centroids = kmeans.cluster_centers_
+labels = kmeans.labels_
+
+X_test_1 = X_test[labels==0]
+X_test_2 = X_test[labels==1]
+X_test_3 = X_test[labels==2]
+Y_test_1 = Y_test[labels==0]
+Y_test_2 = Y_test[labels==1]
+Y_test_3 = Y_test[labels==2]
+
+print("size of X_test_1:"+str(len(X_test_1)))
+print("size of X_test_2:"+str(len(X_test_2)))
+print("size of X_test_3:"+str(len(X_test_3)))
+
 
 color = ["purple", "r", "b"]
 c = Counter(labels)
@@ -116,14 +132,8 @@ for i in range(len(X_training)):
 ax.scatter(centroids[:, 0],centroids[:, 1], centroids[:, 2], marker = "x", s=150, linewidths = 5, zorder = 100)
 plt.show()
 
-
-
-
-
-print('Started fitting ML model. Step 4/5');
 model_1 = logistic_regression_module.LogisticRegression()
 
-#model = ordinal_regression_module.OrdinalRegression()
 model_1.fit(X_training_1, Y_training_1)
 model_2 = logistic_regression_module.LogisticRegression()
 model_2.fit(X_training_1, Y_training_1)
@@ -131,18 +141,25 @@ model_2.fit(X_training_1, Y_training_1)
 model_3 = logistic_regression_module.LogisticRegression()
 model_3.fit(X_training_1, Y_training_1)
 
+# model = ordinal_regression_module.OrdinalRegression()
+# model = quadratic_loss_module.QuadraticLoss()
+# model = vectorized_output_regression_module.VectorizedOutputRegression(FEATURE_SIZE,X_training,Y_training)
 print('Finished fitting ML model. Step 4/5');
 
 
 print('Started analyzing in-sample/out-of-sample error/accuracy for the ML model. Step 5/5');
 (error_val_1, accuracy_1) = model_1.accuracy_and_error(X_training_1, Y_training_1)
-(error_val_2, accuracy_2) = model_1.accuracy_and_error(X_training_2, Y_training_2)
-(error_val_3, accuracy_3) = model_1.accuracy_and_error(X_training_3, Y_training_3)
+(error_val_2, accuracy_2) = model_2.accuracy_and_error(X_training_2, Y_training_2)
+(error_val_3, accuracy_3) = model_3.accuracy_and_error(X_training_3, Y_training_3)
 accuracy=(accuracy_1*len(X_training_1)+accuracy_2*len(X_training_2)+accuracy_3*len(X_training_3))/len(X_training)
-
 error = (error_val_1*len(X_training_1)+error_val_2*len(X_training_2)+error_val_3*len(X_training_3))/len(X_training)
 
 pprint("In sample error is: " + str(error) + ", accuracy is " + str(accuracy))
-(error_val, accuracy) = model.accuracy_and_error(X_test, Y_test)
+
+(error_val_1, accuracy_1) = model_1.accuracy_and_error(X_test_1, Y_test_1)
+(error_val_2, accuracy_2) = model_2.accuracy_and_error(X_test_2, Y_test_2)
+(error_val_3, accuracy_3) = model_3.accuracy_and_error(X_test_3, Y_test_3)
+accuracy=(accuracy_1*len(X_test_1)+accuracy_2*len(X_test_2)+accuracy_3*len(X_test_3))/len(X_test)
+error = (error_val_1*len(X_test_1)+error_val_2*len(X_test_2)+error_val_3*len(X_test_3))/len(X_test)
 pprint("Out of sample error is: " + str(error_val) + ", accuracy is " + str(accuracy))
 print('Finished analyzing in-sample/out-of-sample error/accuracy for the ML model. Step 5/5');
