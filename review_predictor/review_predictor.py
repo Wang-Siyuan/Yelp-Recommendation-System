@@ -31,10 +31,10 @@ import pickle
 np.set_printoptions(threshold=np.nan)
 USER_DATA_SET_FILE_PATH = 'data_set/yelp_academic_dataset_user.json';
 
-TRAINING_DATA_SET_SIZE = 500
-TEST_DATA_SET_SIZE = 500
+TRAINING_DATA_SET_SIZE = 2000
+TEST_DATA_SET_SIZE = 2000
 VALIDATION_DATA_SET_SIZE = 0
-FEATURE_SIZE = 7
+FEATURE_SIZE = 8
 
 print('Started loading business, user, review data set. Step 1/5');
 user = user_module.User(USER_DATA_SET_FILE_PATH);
@@ -57,7 +57,6 @@ pprint(len(X_training))
 pprint(len(Y_training))
 #If we decided to normalize
 X_training = (X_training - X_training.mean(axis=0)) / X_training.std(axis=0)
-
 X_training=np.ma.compress_cols(np.ma.masked_invalid(X_training))
 
 U, s, V = np.linalg.svd(X_training, full_matrices=False)
@@ -66,24 +65,24 @@ np.allclose(X_training, np.dot(U[:,:], np.dot(S[:,:], V[:,:])))
 print('Finished constructing X,Y data matrix. Step 3/5');
 
 
-pca = PCA(n_components= 3)
-X_training=pca.fit_transform(X_training)
-X_test=pca.fit_transform(X_test)
+# pca = PCA(n_components= 5)
+# X_training=pca.fit_transform(X_training)
+# X_test=pca.fit_transform(X_test)
 
-fig = plt.figure()
-# ax3D = fig.add_subplot(111, projection='3d')
-#
-# ax3D.scatter(X_training[:,0],X_training[:,1],X_training[:,2], zdir='z', s=20)
-# plt.show()
-ax = fig.gca(projection='3d')
-ax.set_title('Visualization of input dataset X after PCA')
-ax.scatter(X_training[:,0], X_training[:,1], X_training[:,2],  # data
-           color='purple',                            # marker colour
-           marker='o',                                # marker shape
-           s=30                                       # marker size
-           )
+# fig = plt.figure()
+# # ax3D = fig.add_subplot(111, projection='3d')
+# #
+# # ax3D.scatter(X_training[:,0],X_training[:,1],X_training[:,2], zdir='z', s=20)
+# # plt.show()
+# ax = fig.gca(projection='3d')
+# ax.set_title('Visualization of input dataset X after PCA')
+# ax.scatter(X_training[:,0], X_training[:,1], X_training[:,2],  # data
+#            color='purple',                            # marker colour
+#            marker='o',                                # marker shape
+#            s=30                                       # marker size
+#            )
 
-plt.show()                                            # render the plot
+# plt.show()                                            # render the plot
 
 
 
@@ -121,29 +120,66 @@ print("size of X_test_2:"+str(len(X_test_2)))
 print("size of X_test_3:"+str(len(X_test_3)))
 
 
-color = ["purple", "r", "b"]
-c = Counter(labels)
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.set_title('Visualization of Input X after kmeans clustering ')
-for i in range(len(X_training)):
-    ax.scatter(X_training[i][0], X_training[i][1], X_training[i][2], c=color[labels[i]])
+# color = ["purple", "r", "b"]
+# c = Counter(labels)
+# fig = plt.figure()
+# ax = fig.gca(projection='3d')
+# ax.set_title('Visualization of Input X after kmeans clustering ')
+# for i in range(len(X_training)):
+#     ax.scatter(X_training[i][0], X_training[i][1], X_training[i][2], c=color[labels[i]])
 
-ax.scatter(centroids[:, 0],centroids[:, 1], centroids[:, 2], marker = "x", s=150, linewidths = 5, zorder = 100)
-plt.show()
+# ax.scatter(centroids[:, 0],centroids[:, 1], centroids[:, 2], marker = "x", s=150, linewidths = 5, zorder = 100)
+# plt.show()
 
-model_1 = logistic_regression_module.LogisticRegression()
+# model_1 = logistic_regression_module.LogisticRegression()
+# model_1.fit(X_training_1, Y_training_1)
+# pprint('Finished fitting model 1');
 
+# model_2 = logistic_regression_module.LogisticRegression()
+# model_2.fit(X_training_2, Y_training_2)
+# pprint('Finished fitting model 2');
+
+# model_3 = logistic_regression_module.LogisticRegression()
+# model_3.fit(X_training_3, Y_training_3)
+# pprint('Finished fitting model 3');
+
+# model_1 = quadratic_loss_module.QuadraticLoss()
+# model_1.fit(X_training_1, Y_training_1)
+# pprint('Finished fitting model 1');
+
+# model_2 = quadratic_loss_module.QuadraticLoss()
+# model_2.fit(X_training_2, Y_training_2)
+# pprint('Finished fitting model 2');
+
+# model_3 = quadratic_loss_module.QuadraticLoss()
+# model_3.fit(X_training_3, Y_training_3)
+# pprint('Finished fitting model 3');
+
+# model_1 = ordinal_regression_module.OrdinalRegression()
+# model_1.fit(X_training_1, Y_training_1)
+# pprint('Finished fitting model 1');
+
+# model_2 = ordinal_regression_module.OrdinalRegression()
+# model_2.fit(X_training_2, Y_training_2)
+# pprint('Finished fitting model 2');
+
+# model_3 = ordinal_regression_module.OrdinalRegression()
+# model_3.fit(X_training_3, Y_training_3)
+# pprint('Finished fitting model 3');
+
+
+model_1 = vectorized_output_regression_module.VectorizedOutputRegression()
 model_1.fit(X_training_1, Y_training_1)
-model_2 = logistic_regression_module.LogisticRegression()
-model_2.fit(X_training_1, Y_training_1)
+pprint('Finished fitting model 1');
 
-model_3 = logistic_regression_module.LogisticRegression()
-model_3.fit(X_training_1, Y_training_1)
+model_2 = vectorized_output_regression_module.VectorizedOutputRegression()
+model_2.fit(X_training_2, Y_training_2)
+pprint('Finished fitting model 2');
 
-# model = ordinal_regression_module.OrdinalRegression()
-# model = quadratic_loss_module.QuadraticLoss()
-# model = vectorized_output_regression_module.VectorizedOutputRegression(FEATURE_SIZE,X_training,Y_training)
+model_3 = vectorized_output_regression_module.VectorizedOutputRegression()
+model_3.fit(X_training_3, Y_training_3)
+pprint('Finished fitting model 3');
+
 print('Finished fitting ML model. Step 4/5');
 
 
@@ -161,5 +197,5 @@ pprint("In sample error is: " + str(error) + ", accuracy is " + str(accuracy))
 (error_val_3, accuracy_3) = model_3.accuracy_and_error(X_test_3, Y_test_3)
 accuracy=(accuracy_1*len(X_test_1)+accuracy_2*len(X_test_2)+accuracy_3*len(X_test_3))/len(X_test)
 error = (error_val_1*len(X_test_1)+error_val_2*len(X_test_2)+error_val_3*len(X_test_3))/len(X_test)
-pprint("Out of sample error is: " + str(error_val) + ", accuracy is " + str(accuracy))
+pprint("Out of sample error is: " + str(error) + ", accuracy is " + str(accuracy))
 print('Finished analyzing in-sample/out-of-sample error/accuracy for the ML model. Step 5/5');

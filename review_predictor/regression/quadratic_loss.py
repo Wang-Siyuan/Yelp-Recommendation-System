@@ -1,12 +1,17 @@
 from sklearn import linear_model
 from util import utility as u
+from pprint import pprint
 
 class QuadraticLoss:
     def __init__(self):
-        self.reg = linear_model.Ridge (alpha = .5)
+        self.reg = linear_model.RidgeCV (
+          # alphas = [1e-4, 1e-3, 1e-2,1e-1,1,1e2,1e3],
+          fit_intercept = True,
+          normalize = True)
 
     def fit(self, X, Y):
         self.reg.fit(X,Y)
+        pprint("regularizer coefficient is " + str(self.reg.alpha_))
 
     def accuracy_and_error(self, X, Y):
         error_val = 0

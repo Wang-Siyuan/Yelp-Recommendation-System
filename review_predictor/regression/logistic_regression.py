@@ -10,13 +10,13 @@ class LogisticRegression:
         ,scoring='roc_auc'
         ,cv=3
         ,n_jobs=-1
-        ,max_iter=1000
+        ,max_iter=500
         ,fit_intercept=True
         ,tol=10)
 
     def fit(self, X, Y):
         self.model.fit(X, Y.ravel())
-        pprint(self.model.C_)
+        # pprint(self.model.C_)
 
     def accuracy_and_error(self, X, Y):
         error_val = 0

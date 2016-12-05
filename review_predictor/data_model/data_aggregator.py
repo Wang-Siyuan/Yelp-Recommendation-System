@@ -2,7 +2,7 @@ from util import utility as u
 from pprint import pprint
 import numpy as np
 
-FEATURE_SIZE = 7
+FEATURE_SIZE = 8
 class DataAggregator:
     def __init__(self, training_set_size, test_set_size, validation_set_size):
         self.training_set_size = training_set_size
@@ -40,7 +40,7 @@ class DataAggregator:
         input_matrix[0,4] = self.getUserPreferenceBusinessAttributeCorrelation(user_Id, user_Id_to_business_Id_map, business_Id, business_data_dict, "categories")
         input_matrix[0,5] = business_data_dict[business_Id]['stars']
         input_matrix[0,6] = user_data_dict[user_Id]['average_stars']
-        # input_matrix[0,7] = 1
+        input_matrix[0,7] = 1
         return input_matrix
 
     def populateOutputMatrix(self, user_Id, business_Id, indexed_review_data):

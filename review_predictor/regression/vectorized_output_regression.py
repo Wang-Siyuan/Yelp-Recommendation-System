@@ -7,13 +7,13 @@ import sys
 
 
 class VectorizedOutputRegression:
-    def __init__(self,FEATURE_SIZE, X, Y):
+    def __init__(self):
         self.weights = np.array([ 0.47991533,  0.46137807,  0.41392526,  0.33557923,  0.13173285,
         0.24962059,  0.26108967])
-        self.X = X
-        self.Y = Y
 
     def fit(self, X, Y):
+        self.X = X
+        self.Y = Y
         Y_vectorized = np.zeros((Y.shape[0],5))
         for i in range(1,Y.shape[0]):
             Y_vectorized[i,:] = u.convert_y_to_vector(Y[i])
