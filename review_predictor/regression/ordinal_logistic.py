@@ -1,6 +1,7 @@
 from sklearn import linear_model
+from util import utility as u
 
-class LogisticRegression:
+class OrdinalLogistic:
 	def __init__(self):
 		self.model = linear_model.LogisticRegressionCV(
         Cs=9
@@ -13,13 +14,18 @@ class LogisticRegression:
         ,tol=10)
 
 	def fit(self, X, Y):
-		self.model.fit (X_training, Y_training.ravel())
+		self.model.fit(X_training, Y_training.ravel())
 
 	def accuracy_and_error(self, X, Y):
-		in_sample_error = 0;
+		error_val = 0
+		prediction_match_count = 0
 		for i in range(0,X.shape[0]-1):
 		  predicted_review_result = model.predict(X[i,:].reshape(1, -1));
-		  actual_review_result = Y[i,0];
+  		  actual_review_result = Y[i,0];
+		  if u.convert_y_to_discrete_output(predicted_review_result) == actual_review_result = Y[i,0]:
+		  	prediction_match_count += 1
 		  in_sample_error += (predicted_review_result - actual_review_result)**2;
 		in_sample_error /= X.shape[0];
+		accuracy = prediction_match_count/X.shape[0]
+		return (in_sample_error, accuracy)
 

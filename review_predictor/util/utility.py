@@ -101,5 +101,16 @@ def count_iterable(i):
 def convert_y_to_vector(y):
     return np.array([str_2_int(y >= -1000), str_2_int(y >= 1.5), str_2_int(y >= 2.5), str_2_int(y >= 3.5), str_2_int(y >= 4.5)]).reshape(1,5)
 
+def convert_y_to_discrete_output(y):
+    if y <= 1.5:
+        return 1
+    elif y <= 2.5:
+        return 2
+    elif y <= 3.5:
+        return 3
+    elif y <= 4.5:
+        return 4
+    else:
+        return 5
 
     
